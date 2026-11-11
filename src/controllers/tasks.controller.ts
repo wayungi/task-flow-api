@@ -4,17 +4,13 @@ import type { Task, UpdateTaskInput } from "../models/task.js";
 import { v4 as uuidv4, validate as isUUID } from "uuid";
 
 
-
-
 export const createTask = async(req: Request, res: Response <Task | {message: string}>) : Promise<void> => {
     const { title, description } = req.body;
 
-    if(typeof title !== "string" || title.trim() === "" || (description != null && typeof description !== "string")) {
-        res.status(400).json({ message: "Title is required" });
-        return;
-    }
-
-    const newTask = await TaskService.createTask({ title: title.trim(), description: description?.trim() });
+    const newTask = await TaskService.createTask({
+        title,
+        ...(description !== undefined ? { description } : {})
+    });
 
     res.status(201).json(newTask);
 }
