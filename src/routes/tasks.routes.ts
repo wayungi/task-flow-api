@@ -6,11 +6,39 @@ import { validate } from '../middleware/validate.js';
 
 const router = Router();
 
-router.get('/', getTasks);
-router.get('/:id', validate(taskParamsSchema, "params") ,getTask);
-router.post('/', validate(createTaskSchema, "body"), createTask);
-router.patch('/:id', validate(updateTaskSchema, "body"), updateTask);
-router.delete('/:id', validate(taskParamsSchema, "params"), deleteTask);
+router.get(
+    '/', 
+    getTasks
+);
+
+
+router.get(
+    '/:id', 
+    validate(taskParamsSchema, "params")
+    ,getTask
+);
+
+
+router.post(
+    '/',
+    validate(createTaskSchema, "body"),
+    createTask
+);
+
+
+router.patch(
+    '/:id',
+    validate(taskParamsSchema, "params"),
+    validate(updateTaskSchema, "body"),
+    updateTask
+);
+
+
+router.delete(
+    '/:id',
+    validate(taskParamsSchema, "params"),
+    deleteTask
+);
 
 export default router;
 
