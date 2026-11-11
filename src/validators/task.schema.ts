@@ -6,7 +6,7 @@ export const createTaskSchema = z.strictObject({
 });
 
 export const updateTaskSchema = z.strictObject({
-    title: z.string().trim().min(1, "Title cannot be empty").optional,
+    title: z.string().trim().min(1, "Title cannot be empty").optional(),
     description: z.string().nullable().optional()
 }).refine(
     data => data.title !== undefined || data.description !== undefined,
@@ -14,6 +14,10 @@ export const updateTaskSchema = z.strictObject({
         message: "At least one field must be provided"
     }
 );
+
+export const taskParamsSchema = z.strictObject({
+    id: z.uuid()
+});
 
 
 /*
