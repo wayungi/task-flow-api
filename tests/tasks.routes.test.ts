@@ -56,11 +56,11 @@ describe("task routes", () => {
     );
   });
 
-  it("PUT /api/tasks/:id updates and returns the task", async () => {
+  it("PATCH /api/tasks/:id updates and returns the task", async () => {
     const task = await createTestTask();
 
     const response = await request(app)
-      .put(`/api/tasks/${task.id}`)
+      .patch(`/api/tasks/${task.id}`)
       .send({ title: "Updated task", description: "Updated description" })
       .expect(200);
 
