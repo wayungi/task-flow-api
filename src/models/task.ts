@@ -9,8 +9,12 @@ export interface Task {
   updatedAt: string;
 }
 
-
-export type TaskData = {
+export type CreateTaskInput = {
   title: string;
   description: string | null;
+};
+
+export type UpdateTaskInput = {
+  title?: string;
+  description?: string | null; 
 };

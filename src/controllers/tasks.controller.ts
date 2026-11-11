@@ -1,63 +1,112 @@
 import type { Request, Response } from "express";
 import * as TaskService from "../services/tasks.services.js";
-
-export const getTasks = async (req: Request , res: Response) => {
-    const tasks = await TaskService.getTasks();
-    return res.status(200).json(tasks);
-};
+import type { Task, UpdateTaskInput } from "../models/task.js";
+import { v4 as uuidv4, validate as isUUID } from "uuid";
 
 
-export const getTask = async (req: Request , res: Response) => {
-    const { id } = req.params;
-    if( typeof id === "string" && id.trim() !== "") {
-        const tasks = await TaskService.getTask(id);
-        return res.status(200).json(tasks);
-    }else{
-        return res.status(400).json({ message: "Invalid task ID" });
-    }
-};
 
 
-export const createTask = async(req: Request, res: Response) => {
+export const createTask = async(req: Request, res: Response <Task | {message: string}>) : Promise<void> => {
     const { title, description } = req.body;
-    if(
-        typeof title !== "string" || 
-        title.trim() === "" || 
-        typeof description !== "string" || 
-        description.trim() === "") {
-        return res.status(400).json({ message: "Title and description are required" });
+
+    if(typeof title !== "string" || title.trim() === "" || (description != null && typeof description !== "string")) {
+        res.status(400).json({ message: "Title is required" });
+        return;
     }
-    const newTask = await TaskService.createTask({ title, description });
-    return res.status(201).json(newTask);
+
+    const newTask = await TaskService.createTask({ title: title.trim(), description: description?.trim() });
+
+    res.status(201).json(newTask);
 }
 
 
-export const updateTask = async(req: Request, res: Response) => {
-    const { id } = req.params;
-    if( typeof id !== "string" || id.trim() === "") {
-        return res.status(400).json({ message: "Invalid task ID" });
-    }
-
-    const { title, description } = req.body;
-    if(
-        typeof title !== "string" || 
-        title.trim() === "" || 
-        typeof description !== "string" || 
-        description.trim() === "") {
-        return res.status(400).json({ message: "Title and description are required" });
-    }
-
-    const updatedTask = await TaskService.updateTask(id, { title, description });
-    return res.status(200).json(updatedTask);
+export const getTasks = async (req: Request , res: Response<Task[]>): Promise<void> => {
+    const tasks = await TaskService.getTasks();
+    res.status(200).json(tasks);
 };
 
 
-export const deleteTask = async(req: Request, res: Response) => {
+export const getTask = async (req: Request , res: Response<Task | {message: string}>): Promise<void> => {
     const { id } = req.params;
-      if( typeof id !== "string" || id.trim() === "") {
-        return res.status(400).json({ message: "Invalid task ID" });
+
+    if( typeof id !== "string" || id.trim() === "") {
+        res.status(400).json({ message: "Invalid task ID" });
+        return;
     }
 
-    await TaskService.deleteTask(id);
-    return res.status(200).json({ message: "Task deleted successfully" });
+    const task = await TaskService.getTask(id);
+
+    if (!task) {
+        res.status(404).json({ message: "Task not found"});
+        return;
+    }
+        
+    res.status(200).json(task);
+};
+
+
+export const updateTask = async (req: Request, res: Response<Task | { message: string }>): Promise<void> => {
+
+    const { id } = req.params;
+
+    if (typeof id !== "string" || !isUUID(id)) {
+        res.status(400).json({ message: "Invalid task ID" });
+        return;
+    }
+
+    const body: unknown = req.body;
+
+    if (body === null || typeof body !== "object" || Array.isArray(body)) {
+        res.status(400).json({ message: "Invalid task data" });
+        return;
+    }
+
+    const { title, description } = body as Record<string, unknown>;
+
+    if (
+        (title === undefined && description === undefined) ||
+        (title !== undefined && (typeof title !== "string" || title.trim() === "")) ||
+        (description !== undefined && description !== null && typeof description !== "string")
+    ) {
+        res.status(400).json({ message: "Invalid task data" });
+        return;
+    }
+
+    const changes: UpdateTaskInput = {};
+
+    if (typeof title === "string") {
+        changes.title = title;
+    }
+
+    if (description === null || typeof description === "string") {
+        changes.description = description;
+    }
+
+    const updatedTask = await TaskService.updateTask(id, changes);
+
+    if (updatedTask === undefined) {
+        res.status(404).json({ message: "Task not found" });
+        return;
+    }
+
+    res.status(200).json(updatedTask);
+};
+
+
+export const deleteTask = async(req: Request, res: Response<{ message: string }>) => {
+    const { id } = req.params;
+
+    if( typeof id !== "string" || id.trim() === "") {
+        res.status(400).json({ message: "Invalid task ID" });
+        return;
+    }
+
+    const isDeleted = await TaskService.deleteTask(id);
+
+    if (!isDeleted) {
+        res.status(404).json({ message: "Task not found" });
+        return;
+    }
+
+    res.status(200).json({ message: "Task deleted successfully" });
 };

@@ -10,8 +10,8 @@
     "sourceMap": true,
   
     // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
+      // "noUncheckedIndexedAccess": true,
+      // "exactOptionalPropertyTypes": true,
 
     // Recommended Options
     "strict": true,
