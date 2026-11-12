@@ -10,7 +10,7 @@ const createTask = async (taskData: CreateTaskInput): Promise<Task> => {
     const newTask: Task = {
         "id":uuidv4(),
         "title": title,
-        "description": description,
+        "description": description ?? null,
         "status": "TODO",
         "createdAt": now,
         "updatedAt": now

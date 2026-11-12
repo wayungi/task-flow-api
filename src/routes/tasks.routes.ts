@@ -6,6 +6,12 @@ import { validate } from '../middleware/validate.js';
 
 const router = Router();
 
+// temporarly route
+router.get("/test-error", async () => {
+    throw new Error("Simulated database failure");
+});
+
+
 router.get(
     '/', 
     getTasks
